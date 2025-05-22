@@ -1,0 +1,142 @@
+.formDropdown {
+    border-radius: 2px;
+    border: 1px solid var(--secondaryBackground);
+    background: var(--primaryBackground);
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: all .4s ease;
+}
+
+.formDropdown:hover,
+.formDropdown:focus {
+    border-color: var(--General-Primary-Green);
+}
+
+.formDropdown:has( .formDropdownItems:not(.collapsed)) {
+    border-color: var(--General-Primary-Green);
+}
+
+.formDropdown .formDropdownHeaderOpenIcon svg {
+    transition: all .4s ease;
+}
+
+.formDropdown:hover .formDropdownHeaderOpenIcon svg {
+    stroke: var(--General-Primary-Green);
+}
+
+.formDropdownContainer label {
+    margin-bottom: .5rem;
+    display: block;
+}
+
+.formDropdownHeader {
+    display: flex;
+    align-content: center;
+    align-items: center;
+    padding-left: 0;
+    padding-right: 12px;
+    height: 100%;
+}
+
+.formDropdownHeaderOpenIcon {
+    margin-left: auto;
+    padding-left: 8px;
+}
+
+.formDropdownItemsContainer {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+}
+
+.formDropdownItems {
+    position: absolute;
+    width: fit-content;
+    background: var(--primaryBackground);
+    border-radius: 6px;
+    border: 1px solid var(--secondaryBackground);
+    z-index: 10;
+    max-height: 148px;
+    overflow-y: auto;
+    margin-top: 6px;
+    width: 100%;
+}
+
+.formDropdownItems.collapsed {
+    display: none;
+}
+
+.formDropdownItemSelector.selected {
+    background: #424242;
+}
+
+.formDropdownItemSelector:hover:not(.selected) {
+    background: #424242;
+}
+
+.formDropdown.Small {
+    height: 28px;
+    max-height: 28px;
+}
+
+.formDropdown.Small .formDropdownHeaderOpenIcon {
+    margin-bottom: 5px;
+}
+
+.formDropdown.Stretch {
+    align-self: stretch;
+    display: inline-flex;
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.formDropdownHeaderActiveItem {
+    padding: 10px 10px;
+    overflow: hidden;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    letter-spacing: 0.4px;
+}
+
+.formDropdownItemSelector {
+    padding: 10px 10px;
+    overflow: hidden;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    letter-spacing: 0.4px;
+}
+
+.formDropdownItemSelector.Small, .formDropdownHeaderActiveItem.Small {
+    padding: 6px 10px 6px 10px;
+    overflow: hidden;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    letter-spacing: 0.4px;
+}
+
+.formDropdownItem {
+    width: fit-content;
+}
+
+.formDropdownContainer {
+    width: 100%;
+}
+
+.formDropdownItems > .formDropdownItemSelector:first-child {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+} 
+
+.formDropdownItems > .formDropdownItemSelector:last-child {
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+} 

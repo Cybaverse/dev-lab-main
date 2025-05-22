@@ -1,0 +1,133 @@
+.searchDropdownContainer {
+    width: 100%;
+}
+
+.searchDropdownContainer label {
+    margin-bottom: .5rem;
+    display: block;
+    width: 100%;
+}
+
+.searchDropdownMain {
+    position: relative;
+}
+
+.searchDropdownMain input {
+    border-radius: 2px;
+    border: 1px solid var(--General-Primary-Border);
+    background: var(--primaryBackground);
+    user-select: none;
+    height: 100%;
+    padding: 6px 10px 6px 10px;
+    overflow: hidden;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    letter-spacing: 0.4px;
+    color: var(--General-Main-Text);
+}
+
+.searchDropdown {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+    height: 28px;
+    max-height: 28px;
+    z-index: 10;
+}
+
+.searchDropdownMain input:focus, 
+.searchDropdownMain input:hover {
+    outline: none;
+    border-color: var(--General-Primary-Green);
+}
+
+.searchDropdownItemsContainer {
+    position: relative;
+}
+
+.searchDropdownItems {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.searchDropdownItems::-webkit-scrollbar-track {
+    border-radius: 6px;
+}
+
+.searchDropdownItem {
+    padding: 6px 10px 6px 10px;
+    overflow: hidden;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    letter-spacing: 0.4px;
+    border-radius: 6px;
+    border: 1px none var(--General-Primary-Border);
+    display: flex;
+    align-content: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.searchDropdownItem:hover {
+    background: #4e4e4e;
+}
+
+.SearchDropdownInputContainer {
+    display: flex;
+}
+
+.SearchDropdownHeaderIcon {
+    position: absolute;
+    right: 8px;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.SearchDropdownHeaderClearIcon {
+    position: absolute;
+    right: 24px;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.searchDropdownItemsActions {
+    display: flex;
+    align-items: center;
+}
+
+.searchDropdownItemCreate {
+    border-top: 1px solid var(--General-Primary-Border, #3B3C3D);
+    border-radius: 0px 0px 8px 8px;
+    padding: 12px;
+    width: 100%
+}
+
+.searchDropdownItemsRefresh {
+    display: flex;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    border-radius: 2px;
+    background: var(--quandaryBackground);
+    cursor: pointer;
+}
+
+.searchDropdownItemsAllContainer {
+    border-radius: 6px;
+    border: 1px solid var(--General-Primary-Border);
+    background: var(--primaryBackground);
+    z-index: 2;
+}
