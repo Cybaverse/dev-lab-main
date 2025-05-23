@@ -1,0 +1,45 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "lab1-web",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "npm run dev",
+            "cwd": "${workspaceFolder}/web",
+            "presentation": {
+            "hidden": true
+            }
+        },
+        {
+            "name": "lab1-backend",
+            "type": "python",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/backend",
+            "program": "run.py",
+            "args": ["web","--log_level","INFO"],
+            "presentation": {
+                "hidden": true
+            }
+        },
+        {
+            "type": "pwa-msedge",
+            "name": "Launch Microsoft Edge",
+            "request": "launch",
+            "runtimeArgs": [
+                "--remote-debugging-port=9222"
+            ],
+            "url": "http://127.0.0.1:5015",
+            "presentation": {
+                "hidden": true
+            }
+        },
+    ],
+    "compounds": [
+        {
+            "name": "lab1",
+            "configurations": ["lab1-web", "lab1-backend", "Launch Microsoft Edge"]
+        }
+      ]
+}
