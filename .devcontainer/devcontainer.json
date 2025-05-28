@@ -14,5 +14,7 @@
     "forwardPorts": [5015, 27017],
     // Use 'postCreateCommand' to run commands after the container is created.
     // "postCreateCommand" : "",
-    "remoteUser": "vscode"
+    "remoteUser": "vscode",
+    "postCreateCommand" : "pip3 install --user -r backend/requirements.txt; npm install --prefix web",
+
 }
