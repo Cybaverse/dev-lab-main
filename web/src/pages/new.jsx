@@ -8,10 +8,11 @@ class NewItemPage extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            name: "",
             type: "Laptop",
             availableTypes: ["Laptop", "Desktop", "Server", "Mobile Phone"],
         };
-        this.name = "";
+
     }
 
     async newResult() {
@@ -40,7 +41,8 @@ class NewItemPage extends Component {
                                 className="form-control textbox"
                                 id="name"
                                 placeholder="Full Name"
-                                value={this.name}
+                                value={this.state.name}
+                                onChange={e => this.setState({ name: e.target.value })}
                             />
                             <label className="formLabel">Your Name</label>
                         </div>
