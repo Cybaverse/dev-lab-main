@@ -11,22 +11,39 @@ class NewItemPage extends Component {
             name: "",
             type: "Laptop",
             availableTypes: ["Laptop", "Desktop", "Server", "Mobile Phone"],
+            message: "",
+            error: ""
         };
 
     }
 
     async newResult() {
-        await fetch(`${BACKEND_URL}api/1.0/new`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: document.getElementById("name").value,
-                type: this.state.type
-            })
+        const { name, type } = this.state;
+        if (!name.trim()) {
+            return this.setState({ error: "Name is required.", message: "" });
         }
-        )
+        if (!type.trim()) {
+            return this.setState({ error: "Type is required.", message: "" });
+        }
+        const response = await fetch(`${BACKEND_URL}api/1.0/new`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, type })
+        });
+        if (response.ok) {
+            this.setState({
+                name: "",
+                type: this.state.availableTypes[0],
+                message: "New record added!",
+                error: ""
+            });
+        } else {
+            // Server-side error
+            this.setState({
+                error: `Failed to add: ${response.statusText}`,
+                message: ""
+            });
+        }
     }
 
     render() {
@@ -35,6 +52,12 @@ class NewItemPage extends Component {
                 <NavBar />
                 <div className="mainContent">
                     <div className="formContainer">
+                        {this.state.message && (
+                            <div className="alert alert-success">{this.state.message}</div>
+                        )}
+                        {this.state.error && (
+                            <div className="alert alert-danger">{this.state.error}</div>
+                        )}
                         <div className="formItem">
                             <input
                                 type="text"
