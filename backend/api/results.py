@@ -4,6 +4,7 @@ from core import app, results, globalSettings
 from pydantic import BaseModel, Field
 import models.results
 import bleach
+from typing import Optional
 
 
 class NewResultRequest(BaseModel):
@@ -16,9 +17,16 @@ class NewResultRequest(BaseModel):
              summary="/results",
              description="Get Results",
              )
-async def getResults(
-) -> models.results.getResultsResponse:
+async def getResults(search: Optional[str] = None) -> models.results.getResultsResponse:
     resultsList = next(results._result().query(json=True), [])
+    if search:
+        search_lower = search.lower().strip()
+        filtered_results = [
+            item for item in resultsList
+            if item.get('name') and search_lower in item['name'].lower()
+        ]
+        return models.results.getResultsResponse(results=filtered_results)
+
     return models.results.getResultsResponse(results=resultsList)
 
 

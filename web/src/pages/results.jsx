@@ -8,6 +8,8 @@ class ResultsPage extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            searchTerm: "",
+            resultsData: []
         };
         this.resultsTable = React.createRef();
     }
@@ -17,16 +19,25 @@ class ResultsPage extends Component {
     }
 
     async getResults() {
-        await fetch(`${BACKEND_URL}api/1.0/results`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            this.generateTable(data["results"]);
-        })
+        this.setState({ loading: true, error: null });
+        try {
+            const q = this.state.searchTerm
+                ? `?search=${encodeURIComponent(this.state.searchTerm)}`
+                : "";
+
+            const response = await fetch(`${BACKEND_URL}api/1.0/results${q}`);
+            const data = await response.json();
+            this.setState({
+                resultsData: data.results,
+                loading: false
+            });
+            this.generateTable(data.results);
+        } catch (error) {
+            this.setState({
+                loading: false,
+                error: "Failed to load results. Please try again."
+            });
+        }
     }
 
     generateTable(tableData) {
@@ -48,6 +59,34 @@ class ResultsPage extends Component {
             <div className="MainPageContainer">
                 <NavBar />
                 <div className="mainContent">
+                    {this.state.loading && (
+                        <div className="spinner-border text-primary" style={{ width: '3rem', height: '3rem' }}>
+                            <span className="visually-hidden">Loading...</span>
+                        </div>
+                    )}
+                    {this.state.error && (
+                        <div className="alert alert-danger alert-dismissible fade show">
+                            {this.state.error}
+                            <button type="button" className="btn-close"
+                                onClick={() => this.setState({ error: null })} />
+                        </div>
+                    )}
+                    <div className="formItem" style={{ marginBottom: '1rem' }}>
+                        <input
+                            type="text"
+                            className="form-control textbox"
+                            placeholder="Search by name"
+                            value={this.state.searchTerm}
+                            onChange={e => this.setState({ searchTerm: e.target.value })}
+                        />
+                        <Button
+                            variant="primary"
+                            onClick={() => this.getResults()}
+                            style={{ marginLeft: '0.5rem' }}
+                        >
+                            Search
+                        </Button>
+                    </div>
                     <table className="resultsTable">
                         <thead>
                             <tr>
