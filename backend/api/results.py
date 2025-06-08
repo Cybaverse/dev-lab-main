@@ -1,7 +1,9 @@
-from http.client import HTTPException
+# from http.client import HTTPException
+from fastapi import HTTPException
 from core import app, results, globalSettings
 from pydantic import BaseModel, Field
 import models.results
+import bleach
 
 
 class NewResultRequest(BaseModel):
@@ -28,9 +30,12 @@ async def getResults(
 )
 async def createResult(item: NewResultRequest) -> models.results.NewResultResponse:
     try:
-        name = item.name
+        safe_name = bleach.clean(item.name, strip=True)
+        if not safe_name:
+            raise HTTPException(
+                status_code=400, detail="Name contains disallowed content")
         mainType = item.type
-        results._result().new(name, mainType)
+        results._result().new(safe_name, mainType)
         return {"msg": "Successful"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -25,22 +25,29 @@ class NewItemPage extends Component {
         if (!type.trim()) {
             return this.setState({ error: "Type is required.", message: "" });
         }
-        const response = await fetch(`${BACKEND_URL}api/1.0/new`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, type })
-        });
-        if (response.ok) {
-            this.setState({
-                name: "",
-                type: this.state.availableTypes[0],
-                message: "New record added!",
-                error: ""
+        try {
+            const response = await fetch(`${BACKEND_URL}api/1.0/new`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, type })
             });
-        } else {
-            // Server-side error
+            const body = await response.json();
+            if (response.ok) {
+                this.setState({
+                    name: "",
+                    type: this.state.availableTypes[0],
+                    message: body.msg || "New record added!",
+                    error: ""
+                });
+            } else {
+                this.setState({
+                    error: body.detail || response.statusText || "The content you tried to save is not allowed",
+                    message: ""
+                });
+            }
+        } catch (err) {
             this.setState({
-                error: `Failed to add: ${response.statusText}`,
+                error: err.message || "An unexpected error occurred",
                 message: ""
             });
         }
