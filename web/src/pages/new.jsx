@@ -31,39 +31,39 @@ class NewItemPage extends Component {
     render() {
         return (
             <div className="MainPageContainer">
-            <NavBar />
-            <div className="mainContent">
-                <div className="formContainer">
-                <div className="formItem">
-                    <input
-                    type="text"
-                    className="form-control textbox"
-                    id="name"
-                    placeholder="Full Name"
-                    value={this.name}
-                    />
-                    <label className="formLabel">Your Name</label>
+                <NavBar />
+                <div className="mainContent">
+                    <div className="formContainer">
+                        <div className="formItem">
+                            <input
+                                type="text"
+                                className="form-control textbox"
+                                id="name"
+                                placeholder="Full Name"
+                                value={this.name}
+                            />
+                            <label className="formLabel">Your Name</label>
+                        </div>
+                        <div className="formItem">
+                            <Dropdown
+                                value={this.state.type}
+                                onChange={(type) => this.setState({ type })}
+                                title="Type"
+                            >
+                                {this.state.availableTypes.map((type) => (
+                                    <DropdownItem value={type} key={type}>
+                                        {type}
+                                    </DropdownItem>
+                                ))}
+                            </Dropdown>
+                        </div>
+                        <div className="formItem">
+                            <Button type="button" className="newButton" onClick={() => this.newResult()}>
+                                New
+                            </Button>
+                        </div>
+                    </div>
                 </div>
-                <div className="formItem">
-                    <Dropdown
-                        value={this.state.type}
-                        onChange={(type) => this.setState({ type })}
-                        title="Type"
-                    >
-                    {this.state.availableTypes.map((type) => (
-                        <DropdownItem value={type} key={type}>
-                            {type}
-                        </DropdownItem>
-                    ))}
-                    </Dropdown>
-                </div>
-                </div>
-                <div className="submitButton">
-                <Button type="button" className="newButton" onClick={() => this.newResult()}>
-                    New
-                </Button>
-                </div>
-            </div>
             </div>
         );
     }
