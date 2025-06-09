@@ -39,7 +39,31 @@ class ResultsPage extends Component {
             });
         }
     }
+    exportToCSV = () => {
+        const { resultsData } = this.state;
 
+        if (resultsData.length === 0) {
+            alert("No data to export");
+            return;
+        }
+        const headers = Object.keys(resultsData[0]).join(",");
+        const rows = resultsData.map(item =>
+            Object.values(item).map(field =>
+                `"${field?.toString().replace(/"/g, '""')}"`
+            ).join(",")
+        ).join("\n");
+        const csvContent = `${headers}\n${rows}`;
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        link.setAttribute("download", `results-${timestamp}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
     generateTable(tableData) {
         this.resultsTable.current.innerHTML = "";
         tableData.forEach((result, index) => {
@@ -90,6 +114,11 @@ class ResultsPage extends Component {
                             style={{ marginLeft: '0.5rem' }}
                         >
                             Search
+                        </Button>
+                        <Button variant="success"
+                            onClick={this.exportToCSV}
+                            disabled={this.state.loading || this.state.resultsData.length === 0}>
+                            Download CSV
                         </Button>
                     </div>
                     <table className="resultsTable">
