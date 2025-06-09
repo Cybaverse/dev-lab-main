@@ -9,6 +9,8 @@ from typing import Optional
 
 class NewResultRequest(BaseModel):
     name: str = Field(..., min_length=1, description="Full name is required")
+    email: str = Field(..., min_length=1,
+                       description="Email address is required")
     type: str = Field(..., min_length=1, description="Type is required")
 
 
@@ -42,8 +44,12 @@ async def createResult(item: NewResultRequest) -> models.results.NewResultRespon
         if not safe_name:
             raise HTTPException(
                 status_code=400, detail="Name contains disallowed content")
+        safe_email = bleach.clean(item.email, strip=True)
+        if not safe_name:
+            raise HTTPException(
+                status_code=400, detail="Email contains disallowed content")
         mainType = item.type
-        results._result().new(safe_name, mainType)
+        results._result().new(safe_name, safe_email, mainType)
         return {"msg": "Successful"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -16,25 +16,35 @@ class NewItemPage extends Component {
         };
 
     }
-
+    validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
     async newResult() {
-        const { name, type } = this.state;
+        const { name, email, type } = this.state;
         if (!name.trim()) {
             return this.setState({ error: "Name is required.", message: "" });
         }
         if (!type.trim()) {
             return this.setState({ error: "Type is required.", message: "" });
         }
+        if (!email.trim()) {
+            return this.setState({ error: "Email is required.", message: "" });
+        }
+        if (!this.validateEmail(email)) {
+            return this.setState({ error: "Please enter a valid email address.", message: "" });
+        }
         try {
             const response = await fetch(`${BACKEND_URL}api/1.0/new`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, type })
+                body: JSON.stringify({ name, email, type })
             });
             const body = await response.json();
             if (response.ok) {
                 this.setState({
                     name: "",
+                    email: "",
                     type: this.state.availableTypes[0],
                     message: body.msg || "New record added!",
                     error: ""
@@ -75,6 +85,17 @@ class NewItemPage extends Component {
                                 onChange={e => this.setState({ name: e.target.value })}
                             />
                             <label className="formLabel">Your Name</label>
+                        </div>
+                        <div className="formItem">
+                            <input
+                                type="email"
+                                className="form-control textbox"
+                                id="email"
+                                placeholder="Email Address"
+                                value={this.state.email}
+                                onChange={e => this.setState({ email: e.target.value })}
+                            />
+                            <label className="formLabel">Email Address</label>
                         </div>
                         <div className="formItem">
                             <Dropdown

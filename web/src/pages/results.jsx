@@ -44,9 +44,14 @@ class ResultsPage extends Component {
         this.resultsTable.current.innerHTML = "";
         tableData.forEach((result, index) => {
             const row = document.createElement("tr");
+            const maskedEmail = result.email ?
+                `${result.email.substring(0, 2)}${'*'.repeat(Math.max(0, result.email.indexOf
+                    ('@') - 2))}${result.email.substring(result.email.indexOf('@'))}` :
+                'N/A';
             row.innerHTML = `
                 <td>${result["_id"]}</td>
                 <td>${result["name"]}</td>
+                <td>${maskedEmail}</td>
                 <td>${result["mainType"]}</td>
             `;
             this.resultsTable.current.appendChild(row);
@@ -92,6 +97,7 @@ class ResultsPage extends Component {
                             <tr>
                                 <th>ID</th>
                                 <th>Name</th>
+                                <th>Email</th>
                                 <th>Type</th>
                             </tr>
                         </thead>
