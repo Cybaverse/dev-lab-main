@@ -40,7 +40,8 @@ class NewItemPage extends Component {
                     className="form-control textbox"
                     id="name"
                     placeholder="Full Name"
-                    value={this.name}
+                    value={this.state.name}
+                    onChange={(e) => this.setState({ name: e.target.value })}
                     />
                     <label className="formLabel">Your Name</label>
                 </div>
