@@ -8,24 +8,58 @@ class NewItemPage extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            name: "",
             type: "Laptop",
             availableTypes: ["Laptop", "Desktop", "Server", "Mobile Phone"],
+            message: "",
+            messageType: ""
         };
-        this.name = "";
     }
 
     async newResult() {
-        await fetch(`${BACKEND_URL}api/1.0/new`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: document.getElementById("name").value,
-                type: this.state.type
-            })
+        const { name, type } = this.state;
+
+        if (!name.trim() || !type) {
+            this.setState({
+                message: "Please fill in all required fields.",
+                messageType: "error"
+            });
+            return;
         }
-        )
+
+        try { 
+            const response = await fetch(`${BACKEND_URL}api/1.0/new`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: this.state.name,
+                    type: this.state.type
+                })
+            }
+            );
+
+            if (response.ok) {
+                this.setState({
+                    name: "",
+                    type: "Laptop",
+                    message: "Record added successfully :)",
+                    messageType: "success"
+                });
+            } else {
+                const data = await response.json();
+                this.setState({
+                    message: data.message || "Something went wrong :(",
+                    messageType: "error"
+                });
+            }
+        }   catch (err) {
+            this.setState({
+                message: "Network error. Please try again later.",
+                messageType: "error"
+            });
+        }
     }
 
     render() {
@@ -33,6 +67,11 @@ class NewItemPage extends Component {
             <div className="MainPageContainer">
             <NavBar />
             <div className="mainContent">
+                {this.state.message && ( 
+                    <div className={`message ${this.state.messageType}`}>
+                        {this.state.message}
+                    </div>
+                )}
                 <div className="formContainer">
                 <div className="formItem">
                     <input
