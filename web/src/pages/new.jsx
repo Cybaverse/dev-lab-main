@@ -4,6 +4,15 @@ import { Dropdown, DropdownItem } from '../components/dropdown/Dropdown.jsx';
 import { Button } from 'react-bootstrap';
 import { BACKEND_URL } from '../Global.jsx';
 
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 class NewItemPage extends Component {
     constructor(props) {
         super(props);
@@ -34,7 +43,7 @@ class NewItemPage extends Component {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    name: this.state.name,
+                    name: escapeHtml(this.state.name),
                     type: this.state.type
                 })
             }
