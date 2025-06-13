@@ -7,9 +7,17 @@ import models.results
     summary = "/results",
     description = "Get Results",
 )
-async def getResults(
+async def getResults(search: str = ""
 ) -> models.results.getResultsResponse:
     resultsList = next(results._result().query(json=True),[])
+
+    if search:
+        search = search.lower()
+        resultsList = [
+            r for r in resultsList
+            if search in r.get("name", "").lower()
+        ]
+
     return models.results.getResultsResponse(results=resultsList)
 
 @app.app.post(
