@@ -1921,7 +1921,7 @@ div.dataTables_wrapper div.dataTables_processing {
 }
 
 .submitButton {
-    padding-left: 15px;
+    
 }
 
 .linkDropdown {
@@ -2332,5 +2332,14 @@ a.readMore {
 
     .resultsTable tr:nth-child(odd) {
         background-color: var(--tableRowOdd);
+    }
+
+    .message.success {
+        color: green;
+        margin-bottom: 1rem;
+    }
+    .message.error {
+        color: red;
+        margin-bottom: 1rem;
     }
 }

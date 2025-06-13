@@ -103,8 +103,9 @@ export class Dropdown extends Component {
                     <div className='formDropdownItemsContainer'>
                         <div className={`formDropdownItems ${this.state.collapsed ? 'collapsed' : ''}`}>
                             {Object.keys(this.state.items).map((x) => { 
+                                const isSelected = this.state.selected === x;
                                 return (
-                                    <div key={x} className={`formDropdownItemSelector ${this.props.size}`} onClick={() => this.select(x) }>
+                                    <div key={x} className={`formDropdownItemSelector ${this.props.size}  ${isSelected ? "selected" : ""}`}  onClick={() => this.select(x) }>
                                         {this.state.items[x]}
                                     </div>
                                 )

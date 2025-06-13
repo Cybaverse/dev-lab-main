@@ -4,28 +4,73 @@ import { Dropdown, DropdownItem } from '../components/dropdown/Dropdown.jsx';
 import { Button } from 'react-bootstrap';
 import { BACKEND_URL } from '../Global.jsx';
 
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 class NewItemPage extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            name: "",
+            email: "",
             type: "Laptop",
             availableTypes: ["Laptop", "Desktop", "Server", "Mobile Phone"],
+            message: "",
+            messageType: ""
         };
-        this.name = "";
     }
 
     async newResult() {
-        await fetch(`${BACKEND_URL}api/1.0/new`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: document.getElementById("name").value,
-                type: this.state.type
-            })
+        const { name, type } = this.state;
+
+        if (!name.trim() || !type) {
+            this.setState({
+                message: "Please fill in all required fields.",
+                messageType: "error"
+            });
+            return;
         }
-        )
+
+        try { 
+            const response = await fetch(`${BACKEND_URL}api/1.0/new`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: escapeHtml(this.state.name),
+                    email: escapeHtml(this.state.email),
+                    type: this.state.type
+                })
+            }
+            );
+
+            if (response.ok) {
+                this.setState({
+                    name: "",
+                    type: "Laptop",
+                    message: "Record added successfully :)",
+                    messageType: "success"
+                });
+            } else {
+                const data = await response.json();
+                this.setState({
+                    message: data.message || "Something went wrong :(",
+                    messageType: "error"
+                });
+            }
+        }   catch (err) {
+            this.setState({
+                message: "Network error. Please try again later.",
+                messageType: "error"
+            });
+        }
     }
 
     render() {
@@ -33,6 +78,11 @@ class NewItemPage extends Component {
             <div className="MainPageContainer">
             <NavBar />
             <div className="mainContent">
+                {this.state.message && ( 
+                    <div className={`message ${this.state.messageType}`}>
+                        {this.state.message}
+                    </div>
+                )}
                 <div className="formContainer">
                 <div className="formItem">
                     <input
@@ -40,10 +90,24 @@ class NewItemPage extends Component {
                     className="form-control textbox"
                     id="name"
                     placeholder="Full Name"
-                    value={this.name}
+                    value={this.state.name}
+                    onChange={(e) => this.setState({ name: e.target.value })}
                     />
                     <label className="formLabel">Your Name</label>
                 </div>
+
+                <div className="formItem">
+                    <input
+                    type="email"
+                    className="form-control textbox"
+                    id="email"
+                    placeholder="Email Address"
+                    value={this.state.email}
+                    onChange={(e) => this.setState({ email: e.target.value })}
+                    />
+                <label className="formLabel">Email Address</label>
+                </div>
+
                 <div className="formItem">
                     <Dropdown
                         value={this.state.type}
@@ -57,6 +121,7 @@ class NewItemPage extends Component {
                     ))}
                     </Dropdown>
                 </div>
+
                 </div>
                 <div className="submitButton">
                 <Button type="button" className="newButton" onClick={() => this.newResult()}>

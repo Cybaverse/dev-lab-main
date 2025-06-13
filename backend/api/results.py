@@ -7,9 +7,17 @@ import models.results
     summary = "/results",
     description = "Get Results",
 )
-async def getResults(
+async def getResults(search: str = ""
 ) -> models.results.getResultsResponse:
     resultsList = next(results._result().query(json=True),[])
+
+    if search:
+        search = search.lower()
+        resultsList = [
+            r for r in resultsList
+            if search in r.get("name", "").lower()
+        ]
+
     return models.results.getResultsResponse(results=resultsList)
 
 @app.app.post(
@@ -21,8 +29,9 @@ async def getResults(
 async def createResult(body: dict) -> models.results.NewResultResponse:
     try:
         name = body.get("name")
+        email = body.get("email")
         mainType = body.get("type")
-        results._result().new(name, mainType)
+        results._result().new(name, email, mainType)
         return {"msg": "Successful"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
