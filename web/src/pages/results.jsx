@@ -4,6 +4,17 @@ import { SearchDropdown } from '../components/searchDropdown/searchDropdown.jsx'
 import { Button } from 'react-bootstrap';
 import { BACKEND_URL } from '../Global.jsx';
 
+function redactEmail(email) {
+    if (!email) return "";
+        const [local, domain] = email.split("@");
+    if (!domain) return email;
+        const visibleChars = 2; // show first 2 chars of local part
+        const redactedLocal = local.length > visibleChars 
+        ? local.slice(0, visibleChars) + "*".repeat(local.length - visibleChars)
+        : local;
+    return `${redactedLocal}@${domain}`;
+}
+
 class ResultsPage extends Component {
     constructor(props) {
         super(props);
@@ -85,6 +96,7 @@ class ResultsPage extends Component {
                             <tr>
                                 <th>ID</th>
                                 <th>Name</th>
+                                <th>Email</th>
                                 <th>Type</th>
                             </tr>
                         </thead>
@@ -93,6 +105,7 @@ class ResultsPage extends Component {
                                 <tr key={result._id}>
                                 <td>{result._id}</td>
                                 <td>{result.name}</td>
+                                <td>{redactEmail(result.email)}</td>
                                 <td>{result.mainType}</td>
                                 </tr>
                             ))}

@@ -18,6 +18,7 @@ class NewItemPage extends Component {
         super(props);
         this.state = {
             name: "",
+            email: "",
             type: "Laptop",
             availableTypes: ["Laptop", "Desktop", "Server", "Mobile Phone"],
             message: "",
@@ -44,6 +45,7 @@ class NewItemPage extends Component {
                 },
                 body: JSON.stringify({
                     name: escapeHtml(this.state.name),
+                    email: escapeHtml(this.state.email),
                     type: this.state.type
                 })
             }
@@ -93,6 +95,19 @@ class NewItemPage extends Component {
                     />
                     <label className="formLabel">Your Name</label>
                 </div>
+
+                <div className="formItem">
+                    <input
+                    type="email"
+                    className="form-control textbox"
+                    id="email"
+                    placeholder="Email Address"
+                    value={this.state.email}
+                    onChange={(e) => this.setState({ email: e.target.value })}
+                    />
+                <label className="formLabel">Email Address</label>
+                </div>
+
                 <div className="formItem">
                     <Dropdown
                         value={this.state.type}
@@ -106,6 +121,7 @@ class NewItemPage extends Component {
                     ))}
                     </Dropdown>
                 </div>
+
                 </div>
                 <div className="submitButton">
                 <Button type="button" className="newButton" onClick={() => this.newResult()}>

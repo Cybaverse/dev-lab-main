@@ -29,8 +29,9 @@ async def getResults(search: str = ""
 async def createResult(body: dict) -> models.results.NewResultResponse:
     try:
         name = body.get("name")
+        email = body.get("email")
         mainType = body.get("type")
-        results._result().new(name, mainType)
+        results._result().new(name, email, mainType)
         return {"msg": "Successful"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

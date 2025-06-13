@@ -5,6 +5,7 @@ PyObjectId = Annotated[str, BeforeValidator(str)]
 class Result(BaseModel):
     id: PyObjectId = Field(default=None, alias="_id", title="Result ID")
     name: str = Field(..., title="Result Name")
+    email: str = Field(..., title="Email")
     mainType: str = Field(..., title="Main Type")
 
 class getResultsResponse(BaseModel):
