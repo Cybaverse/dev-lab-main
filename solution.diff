@@ -1,0 +1,554 @@
+diff --git a/backend/api/results.py b/backend/api/results.py
+index edfc1e2..9873055 100644
+--- a/backend/api/results.py
++++ b/backend/api/results.py
+@@ -1,15 +1,34 @@
+ from http.client import HTTPException
+ from core import app, results, globalSettings
++from pydantic import BaseModel
++from fastapi import Query
+ import models.results
+ 
+-@app.app.get(f"/api/1.0/results",
++@app.app.get(
++    "/api/1.0/results",
+     tags=["Results"],
+-    summary = "/results",
+-    description = "Get Results",
++    summary="/results",
++    description="Get Results",
+ )
+ async def getResults(
++    search: str = Query(default=None, description="Search term for filtering results by name")
+ ) -> models.results.getResultsResponse:
+-    resultsList = next(results._result().query(json=True),[])
+-    return models.results.getResultsResponse(results=resultsList)
++    
++    resultsList = next(results._result().query(json=True), [])
++
++    if search:
++        resultsList = [r for r in resultsList if search.lower() in r["name"].lower()]
++
++    plainResults = []
++
++    for r in resultsList:
++        plainResults.append({
++            "_id": r.get("_id"),
++            "name": r.get("name"),
++            "mainType": r.get("mainType"),
++            "email": r.get("email")  
++        })
++
++    return models.results.getResultsResponse(results=plainResults)
+ 
+ @app.app.post(
+@@ -23,6 +42,7 @@ async def createResult(body: dict) -> models.results.NewResultResponse:
+         name = body.get("name")
+         mainType = body.get("type")
+-        results._result().new(name, mainType)
++        email = body.get("email")
++        results._result().new(name, mainType, email)
+         return {"msg": "Successful"}
+     except Exception as e:
+-        raise HTTPException(status_code=400, detail=str(e))
+\ No newline at end of file
++        raise HTTPException(status_code=400, detail=str(e))
+diff --git a/backend/core/results.py b/backend/core/results.py
+index 6fbcff9..65bc90d 100644
+--- a/backend/core/results.py
++++ b/backend/core/results.py
+@@ -9,10 +9,12 @@ class _result(core.database._document):
+     name = str()
+     mainType = str()
++    email = str()
+ 
+     _dbCollection = "results"
+ 
+-    def new(self,name,mainType):
++    def new(self,name,mainType, email):
+         self.name = name
+         self.mainType = mainType
++        self.email = email
+         return super(_result, self).new()
+     
+\ No newline at end of file
+diff --git a/backend/models/results.py b/backend/models/results.py
+index d938c2c..ada1ccf 100644
+--- a/backend/models/results.py
++++ b/backend/models/results.py
+@@ -1,4 +1,4 @@
+-from pydantic import BaseModel, Field, BeforeValidator
+-from typing import Annotated
++from pydantic import BaseModel, BeforeValidator, Field, EmailStr
++from typing import Annotated, Optional
+ PyObjectId = Annotated[str, BeforeValidator(str)]
+ 
+@@ -7,4 +7,5 @@ class Result(BaseModel):
+     name: str = Field(..., title="Result Name")
+     mainType: str = Field(..., title="Main Type")
++    email: Optional[EmailStr] = Field(default=None, title="Email Address")
+ 
+ class getResultsResponse(BaseModel):
+diff --git a/web/src/components/dropdown/Dropdown.jsx b/web/src/components/dropdown/Dropdown.jsx
+index 02103cc..5046179 100644
+--- a/web/src/components/dropdown/Dropdown.jsx
++++ b/web/src/components/dropdown/Dropdown.jsx
+@@ -12,19 +12,19 @@ export class Dropdown extends Component {
+         size: PropTypes.string,
+         disabled: PropTypes.bool,
+-        children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.element),PropTypes.element]),
++        children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.element), PropTypes.element]),
+         onChange: PropTypes.func,
+         onOpen: PropTypes.func,
+-        value: PropTypes.oneOfType([PropTypes.string,PropTypes.number]),
++        value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+         title: PropTypes.string
+     }
+-    
++
+     constructor(props) {
+         super(props);
+ 
+         this.state = {
+-            collapsed : true,
+-            selected : null,
+-            items : {},
+-            
++            collapsed: true,
++            selected: null,
++            items: {},
++
+         }
+ 
+@@ -35,8 +35,8 @@ export class Dropdown extends Component {
+         document.addEventListener('click', this.collapse.bind(this), true);
+         if (this.props.value != null) {
+-            this.setState({selected: this.props.value})
++            this.setState({ selected: this.props.value })
+         }
+         this.generateItems()
+-        
++
+     }
+ 
+@@ -48,13 +48,13 @@ export class Dropdown extends Component {
+         if (this.props.children != preProps.children) {
+             this.generateItems()
+-        } 
++        }
+         if (this.props.value != preProps.value) {
+-            this.setState({ selected : this.props.value })
++            this.setState({ selected: this.props.value })
+         }
+     }
+ 
+     collapse(e) {
+-        if ( this.fromDropdownHeader.current && (!this.fromDropdownHeader.current?.contains(e.target))) {
+-            this.setState({ collapsed : true })
++        if (this.fromDropdownHeader.current && (!this.fromDropdownHeader.current?.contains(e.target))) {
++            this.setState({ collapsed: true })
+         }
+     }
+@@ -63,5 +63,5 @@ export class Dropdown extends Component {
+         if (this.props.children) {
+             var items = {};
+-            Children.map(this.props.children, child => { 
++            Children.map(this.props.children, child => {
+                 if (child.type.name == DropdownItem.name) {
+                     items[child.props.value] = child
+@@ -73,5 +73,5 @@ export class Dropdown extends Component {
+ 
+     select(value) {
+-        this.setState({ selected : value, collapsed : true })
++        this.setState({ selected: value, collapsed: true })
+         if (this.props.onChange) {
+             this.props.onChange(value)
+@@ -81,9 +81,9 @@ export class Dropdown extends Component {
+     onOpen() {
+         if (!this.props.disabled) {
+-            this.setState({ collapsed : !this.state.collapsed })
++            this.setState({ collapsed: !this.state.collapsed })
+             if (this.props.onOpen) { this.props.onOpen() }
+         }
+     }
+-    
++
+     render() {
+         return (
+@@ -97,5 +97,5 @@ export class Dropdown extends Component {
+                         <div className='formDropdownHeaderOpenIcon'>
+                             <svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" viewBox="0 0 10 6" fill="none">
+-                                <path d="M4.99994 4.50933L0.660348 0.169739L-6.10352e-05 0.830148L4.99994 5.83015L9.99994 0.830148L9.33953 0.169739L4.99994 4.50933Z" fill="currentColor"/>
++                                <path d="M4.99994 4.50933L0.660348 0.169739L-6.10352e-05 0.830148L4.99994 5.83015L9.99994 0.830148L9.33953 0.169739L4.99994 4.50933Z" fill="currentColor" />
+                             </svg>
+                         </div>
+@@ -103,11 +103,18 @@ export class Dropdown extends Component {
+                     <div className='formDropdownItemsContainer'>
+                         <div className={`formDropdownItems ${this.state.collapsed ? 'collapsed' : ''}`}>
+-                            {Object.keys(this.state.items).map((x) => { 
++                            {Object.keys(this.state.items).map((x) => {
++                                const isSelected = this.state.selected === x;
+                                 return (
+-                                    <div key={x} className={`formDropdownItemSelector ${this.props.size}`} onClick={() => this.select(x) }>
++                                    <div
++                                        key={x}
++                                        className={`formDropdownItemSelector ${this.props.size} ${isSelected ? 'selected' : ''}`}
++                                        onClick={() => this.select(x)}
++                                    >
+                                         {this.state.items[x]}
+                                     </div>
+-                                )
++                                );
+                             })}
++
++
+                         </div>
+                     </div>
+@@ -120,6 +127,6 @@ export class Dropdown extends Component {
+ export class DropdownItem extends Component {
+     static propTypes = {
+-        value: PropTypes.oneOfType([PropTypes.string,PropTypes.bool,PropTypes.number]).isRequired,
+-        children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.element),PropTypes.element,PropTypes.string])
++        value: PropTypes.oneOfType([PropTypes.string, PropTypes.bool, PropTypes.number]).isRequired,
++        children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.element), PropTypes.element, PropTypes.string])
+     }
+ 
+@@ -127,5 +134,5 @@ export class DropdownItem extends Component {
+         super(props);
+     }
+-    
++
+     render() {
+         return (
+diff --git a/web/src/pages/new.jsx b/web/src/pages/new.jsx
+index e63c477..5d88021 100644
+--- a/web/src/pages/new.jsx
++++ b/web/src/pages/new.jsx
+@@ -2,6 +2,7 @@ import { Component } from 'react';
+ import { NavBar } from '../components/navbar/navbar.jsx';
+ import { Dropdown, DropdownItem } from '../components/dropdown/Dropdown.jsx';
+-import { Button } from 'react-bootstrap';
++import { Button, Alert } from 'react-bootstrap';
+ import { BACKEND_URL } from '../Global.jsx';
++import DOMPurify from 'dompurify';
+ 
+ class NewItemPage extends Component {
+@@ -11,62 +12,140 @@ class NewItemPage extends Component {
+             type: "Laptop",
+             availableTypes: ["Laptop", "Desktop", "Server", "Mobile Phone"],
++            name: "",
++            email: "",
++            successMessage: "",
++            errorMessage: ""
+         };
+-        this.name = "";
++    }
++
++    isValidEmail(email) {
++        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
++        return regex.test(email);
++    }
++
++    validateForm() {
++        const { name, type, email } = this.state;
++
++        if (!name || !type || !email) {
++            this.setState({
++                errorMessage: "Name, type and email are required.",
++                successMessage: ""
++            });
++            return false;
++        }
++
++        if (!this.isValidEmail(email)) {
++            this.setState({
++                errorMessage: "Please enter a valid email address.",
++                successMessage: ""
++            });
++            return false;
++        }
++
++        return true;
+     }
+ 
+     async newResult() {
+-        await fetch(`${BACKEND_URL}api/1.0/new`, {
+-            method: 'POST',
+-            headers: {
+-                'Content-Type': 'application/json'
+-            },
+-            body: JSON.stringify({
+-                name: document.getElementById("name").value,
+-                type: this.state.type
+-            })
++        if (!this.validateForm()) return;
++
++        try {
++            const response = await fetch(`${BACKEND_URL}api/1.0/new`, {
++                method: 'POST',
++                headers: { 'Content-Type': 'application/json' },
++                body: JSON.stringify({
++                    name: this.state.name,
++                    type: this.state.type,
++                    email: this.state.email
++                })
++            });
++
++            if (response.ok) {
++                this.setState({
++                    name: "",
++                    type: "Laptop",
++                    email: "",
++                    successMessage: "New record added successfully!",
++                    errorMessage: ""
++                });
++            } else {
++                const data = await response.json();
++                this.setState({
++                    errorMessage: data.message || "Failed to add the record.",
++                    successMessage: ""
++                });
++            }
++        } catch (err) {
++            this.setState({
++                errorMessage: "An error occurred while submitting the form.",
++                successMessage: ""
++            });
+         }
+-        )
+     }
+ 
++    handleInputChange = (field, value) => {
++        const clean = DOMPurify.sanitize(value, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
++        this.setState({ [field]: clean });
++    };
++
+     render() {
++        const { name, type, email, availableTypes, successMessage, errorMessage } = this.state;
++
+         return (
+             <div className="MainPageContainer">
+-            <NavBar />
+-            <div className="mainContent">
+-                <div className="formContainer">
+-                <div className="formItem">
+-                    <input
+-                    type="text"
+-                    className="form-control textbox"
+-                    id="name"
+-                    placeholder="Full Name"
+-                    value={this.name}
+-                    />
+-                    <label className="formLabel">Your Name</label>
+-                </div>
+-                <div className="formItem">
+-                    <Dropdown
+-                        value={this.state.type}
+-                        onChange={(type) => this.setState({ type })}
+-                        title="Type"
+-                    >
+-                    {this.state.availableTypes.map((type) => (
+-                        <DropdownItem value={type} key={type}>
+-                            {type}
+-                        </DropdownItem>
+-                    ))}
+-                    </Dropdown>
+-                </div>
+-                </div>
+-                <div className="submitButton">
+-                <Button type="button" className="newButton" onClick={() => this.newResult()}>
+-                    New
+-                </Button>
++                <NavBar />
++                <div className="mainContent">
++                    <div className="formContainer">
++                        <div className="formItem">
++                            <input
++                                type="text"
++                                className="form-control textbox"
++                                id="name"
++                                placeholder="Full Name"
++                                value={name}
++                                onChange={(e) => this.handleInputChange("name", e.target.value)}
++                            />
++                            <label className="formLabel">Your Name</label>
++                        </div>
++
++                        <div className="formItem">
++                            <input
++                                type="email"
++                                className="form-control textbox"
++                                id="email"
++                                placeholder="Email Address"
++                                value={email}
++                                onChange={(e) => this.handleInputChange("email", e.target.value)}
++                            />
++                            <label className="formLabel">Your Email</label>
++                        </div>
++
++                        <div className="formItem">
++                            <Dropdown
++                                value={type}
++                                onChange={(type) => this.setState({ type })}
++                                title="Type"
++                            >
++                                {availableTypes.map((typeOption) => (
++                                    <DropdownItem value={typeOption} key={typeOption}>
++                                        {typeOption}
++                                    </DropdownItem>
++                                ))}
++                            </Dropdown>
++                        </div>
++                    </div>
++
++                    <Button type="button" className="newButton" onClick={() => this.newResult()}>
++                        New
++                    </Button>
++
++                    <div className="submitButton mt-3">
++                        {successMessage && <Alert variant="success">{successMessage}</Alert>}
++                        {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
++                    </div>
+                 </div>
+             </div>
+-            </div>
+         );
+     }
+ }
+ 
+-export default NewItemPage;
+\ No newline at end of file
++export default NewItemPage;
+diff --git a/web/src/pages/results.jsx b/web/src/pages/results.jsx
+index ee6df8f..19b17aa 100644
+--- a/web/src/pages/results.jsx
++++ b/web/src/pages/results.jsx
+@@ -1,6 +1,4 @@
+ import React, { Component } from 'react';
+ import { NavBar } from '../components/navbar/navbar.jsx';
+-import { SearchDropdown } from '../components/searchDropdown/searchDropdown.jsx';
+-import { Button } from 'react-bootstrap';
+ import { BACKEND_URL } from '../Global.jsx';
+ 
+@@ -9,4 +7,6 @@ class ResultsPage extends Component {
+         super(props);
+         this.state = {
++            searchTerm: '',
++            results: [] 
+         };
+         this.resultsTable = React.createRef();
+@@ -17,20 +17,28 @@ class ResultsPage extends Component {
+     }
+ 
+-    async getResults() {
+-        await fetch(`${BACKEND_URL}api/1.0/results`, {
++    async getResults(searchTerm = '') {
++        const query = searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : '';
++        const response = await fetch(`${BACKEND_URL}api/1.0/results${query}`, {
+             method: 'GET',
+             headers: {
+                 'Content-Type': 'application/json'
+             }
+-        })
+-        .then(response => response.json())
+-        .then(data => {
+-            this.generateTable(data["results"]);
+-        })
++        });
++        const data = await response.json();
++        this.setState({ results: data["results"] }); 
++        this.generateTable(data["results"]);
++    }
++
++    maskEmail(email) {
++        if (!email || !email.includes('@')) return '';
++        const [user, domain] = email.split('@');
++        const visiblePart = user.substring(0, 2);
++        const masked = visiblePart + '*'.repeat(Math.max(1, user.length - 2));
++        return `${masked}@${domain}`;
+     }
+ 
+     generateTable(tableData) {
+         this.resultsTable.current.innerHTML = "";
+-        tableData.forEach((result, index) => {
++        tableData.forEach((result) => {
+             const row = document.createElement("tr");
+             row.innerHTML = `
+@@ -38,4 +46,5 @@ class ResultsPage extends Component {
+                 <td>${result["name"]}</td>
+                 <td>${result["mainType"]}</td>
++                <td>${this.maskEmail(result["email"])}</td>
+             `;
+             this.resultsTable.current.appendChild(row);
+@@ -44,4 +53,37 @@ class ResultsPage extends Component {
+     }
+ 
++    downloadCSV = () => {
++        const { results } = this.state;
++
++        if (!results.length) return;
++
++        const header = ['ID', 'Name', 'Type', 'Email'];
++        const rows = results.map(r => [
++            `"${r._id}"`,
++            `"${r.name}"`,
++            `"${r.mainType}"`,
++            `"${r.email || ''}"`
++        ]);
++
++        const csvContent = [
++            header.join(','), 
++            ...rows.map(row => row.join(','))
++        ].join('\n');
++
++        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
++        const link = document.createElement("a");
++        link.href = URL.createObjectURL(blob);
++        link.download = "results.csv";
++        document.body.appendChild(link);
++        link.click();
++        document.body.removeChild(link);
++    };
++
++    handleSearchChange = (event) => {
++        const value = event.target.value;
++        this.setState({ searchTerm: value });
++        this.getResults(value);
++    }
++
+     render() {
+         return (
+@@ -49,4 +91,16 @@ class ResultsPage extends Component {
+                 <NavBar />
+                 <div className="mainContent">
++                    <input
++                        type="text"
++                        placeholder="Search by name..."
++                        value={this.state.searchTerm}
++                        onChange={this.handleSearchChange}
++                        style={{ marginBottom: '10px', padding: '5px' }}
++                    />
++
++                    <button onClick={this.downloadCSV} style={{ marginBottom: '10px' }}>
++                        Download as CSV
++                    </button>
++
+                     <table className="resultsTable">
+                         <thead>
+@@ -55,8 +109,8 @@ class ResultsPage extends Component {
+                                 <th>Name</th>
+                                 <th>Type</th>
++                                <th>Email</th>
+                             </tr>
+                         </thead>
+-                        <tbody ref={this.resultsTable}>
+-                        </tbody>
++                        <tbody ref={this.resultsTable}></tbody>
+                     </table>
+                 </div>
+@@ -66,3 +120,3 @@ class ResultsPage extends Component {
+ }
+ 
+-export default ResultsPage;
+\ No newline at end of file
++export default ResultsPage;
