@@ -32,6 +32,10 @@ Launching will also start a web browser, but you are welcome to use any browser 
 Submit back a brief solution to each issue, as well as the output of the following command in the terminal:
 `git diff --unified=2`
 
+For an example of this, please see the **exampleSubmission** folder. Please make sure that your diff looks similar to the example `solution.diff`, and ideally a simple report like `solution.md` should also be provided.
+
+*Note: Please do not create a fork of this repo and submit back a PR. Please submit your solutions via the contact who provided the lab.*
+
 <br>
 
 ## FAQs

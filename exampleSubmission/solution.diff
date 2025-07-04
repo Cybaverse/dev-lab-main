@@ -1,0 +1,11 @@
+diff --git a/web/src/pages/new.jsx b/web/src/pages/new.jsx
+index e63c477..711dd82 100644
+--- a/web/src/pages/new.jsx
++++ b/web/src/pages/new.jsx
+@@ -10,5 +10,5 @@ class NewItemPage extends Component {
+         this.state = {
+             type: "Laptop",
+-            availableTypes: ["Laptop", "Desktop", "Server", "Mobile Phone"],
++            availableTypes: ["Laptop"],
+         };
+         this.name = "";
